@@ -1,0 +1,310 @@
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spin Wheel App</title>
+    <!-- Google Font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+    body {
+      height: 100vh;
+      background: linear-gradient(135deg, #c3a3f1, #6414e9);
+    }
+    .wrapper {
+      width: 90%;
+      max-width: 34.37em;
+      max-height: 90vh;
+      background-color: #ffffff;
+      position: absolute;
+      transform: translate(-50%, -50%);
+      top: 50%;
+      left: 50%;
+      padding: 3em;
+      border-radius: 1em;
+      box-shadow: 0 4em 5em rgba(27, 8, 53, 0.2);
+    }
+    .container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    #wheel {
+      max-height: inherit;
+      width: inherit;
+      top: 0;
+      padding: 0;
+    }
+    @keyframes rotate {
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+    #spin-btn {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      top: 50%;
+      left: 50%;
+      height: 16%;
+      width: 16%;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 0;
+      background: radial-gradient(#fdcf3b 50%, #d88a40 85%);
+      color: #c66e16;
+      text-transform: uppercase;
+      font-size: 0.9em;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+    img {
+      position: absolute;
+      width: 4em;
+      top: 45%;
+      right: -8%;
+    }
+    #final-value {
+      font-size: 1.5em;
+      text-align: center;
+      margin-top: 1.5em;
+      color: #202020;
+      font-weight: 500;
+    }
+    @media screen and (max-width: 768px) {
+      .wrapper {
+        font-size: 12px;
+      }
+      img {
+        right: -5%;
+      }
+    }
+    canvas {
+      transition: transform 3s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    /* Popup background */
+    .popup {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Popup content box */
+    .popup-content {
+        background: white;
+        padding: 2em;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        animation: fadeIn 0.5s ease-in-out;
+    }
+
+    /* Close button */
+    .close {
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        font-size: 1.5em;
+        cursor: pointer;
+    }
+
+    /* Fade-in animation */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="container">
+        <canvas id="wheel"></canvas>
+        <button id="spin-btn">Spin</button>
+      </div>
+      <div id="final-value">
+        <p>Click On The Spin Button To Start</p>
+      </div>
+      <!--button id="reset-btn">Reset Game</button-->
+    </div>
+    <div id="popup" class="popup">
+      <div class="popup-content">
+          <span id="close-popup" class="close">&times;</span>
+          <h2>Congratulations! 🎉</h2>
+          <p id="popup-message">You won a prize!</p>
+      </div>
+    </div>
+    <!-- Chart JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <!-- Chart JS Plugin for displaying text over chart -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.1.0/chartjs-plugin-datalabels.min.js"></script>
+    <!-- Script -->
+    <script>
+      window.onload = () => {
+          if (localStorage.getItem("gamePlayed") === "true") {
+              spinBtn.disabled = true; // Disable spin button
+
+              let storedPrize = localStorage.getItem("prize");
+              if (storedPrize) {
+                  // Show popup with stored prize
+                  document.getElementById("popup-message").innerText = storedPrize;
+                  document.getElementById("popup").style.display = "flex";
+                  
+                  // Update title based on prize type
+                  document.querySelector(".popup-content h2").innerText = 
+                      storedPrize.includes("Better luck next time!") ? "Oops! 😢" : "Congratulations! 🎉";
+              }
+          }
+      };
+
+
+      const wheel = document.getElementById("wheel");
+      const spinBtn = document.getElementById("spin-btn");
+      const finalValue = document.getElementById("final-value");
+      //Object that stores values of minimum and maximum angle for a value
+      const rotationValues = [
+        { minDegree: 0, maxDegree: 36, value: "5% OFF" },
+        { minDegree: 36, maxDegree: 64, value: "10% OFF" },
+        { minDegree: 64, maxDegree: 110, value: "FREE DELIVERY" },
+        { minDegree: 110, maxDegree: 128, value: "MYSTERY BOX" },
+        { minDegree: 128, maxDegree: 360, value: "BETTER LUCK NEXT TIME" },
+      ];
+      //Size of each piece
+      const data = [16, 16, 16, 16, 16];
+      //background color for each piece
+      var pieColors = [
+        "#8b35bc",
+        "#b163da",
+        "#8b35bc",
+        "#b163da",
+        "#8b35bc",
+      ];
+      //Create chart
+      let myChart = new Chart(wheel, {
+        //Plugin for displaying text on pie chart
+        plugins: [ChartDataLabels],
+        //Chart Type Pie
+        type: "pie",
+        data: {
+          //Labels(values which are to be displayed on chart)
+          labels: ["5% OFF", "10% OFF", "FREE DELIVERY", "MYSTERY BOX", "BETTER LUCK"],
+          //Settings for dataset/pie
+          datasets: [
+            {
+              backgroundColor: pieColors,
+              data: data,
+            },
+          ],
+        },
+        options: {
+          //Responsive chart
+          responsive: true,
+          animation: { duration: 0 },
+          plugins: {
+            //hide tooltip and legend
+            tooltip: false,
+            legend: {
+              display: false,
+            },
+            //display labels inside pie chart
+            datalabels: {
+              color: "#ffffff",
+              formatter: (_, context) => context.chart.data.labels[context.dataIndex],
+              font: { size: 17 },
+            },
+          },
+        },
+      });
+      //display value based on the randomAngle
+      const valueGenerator = (angleValue) => {
+          for (let i of rotationValues) {
+              if (angleValue >= i.minDegree && angleValue <= i.maxDegree) {
+                  let popupMessage = document.getElementById("popup-message");
+                  let popup = document.getElementById("popup");
+                  let popupTitle = document.querySelector(".popup-content h2");
+
+                  let prizeText = i.value === "BETTER LUCK NEXT TIME" 
+                      ? "Oops! 😢 Better luck next time!" 
+                      : `Congratulations! 🎉 You won: ${i.value}! 🎁`;
+
+                  popupTitle.innerText = i.value === "BETTER LUCK NEXT TIME" ? "Oops! 😢" : "Congratulations! 🎉";
+                  popupMessage.innerText = prizeText;
+
+                  popup.style.display = "flex"; // Show popup
+                  
+                  // Save prize in localStorage
+                  localStorage.setItem("prize", prizeText);
+                  localStorage.setItem("gamePlayed", "true"); // Ensure game is marked as played
+                  
+                  break;
+              }
+          }
+      };
+
+
+
+      //Spinner count
+      let count = 0;
+      //100 rotations for animation and last rotation for result
+      let resultValue = 101;
+      //Start spinning
+      spinBtn.addEventListener("click", () => {
+        spinBtn.disabled = true;
+        // Store in localStorage to mark the game as played
+        localStorage.setItem("gamePlayed", "true");
+        //Empty final value
+        finalValue.innerHTML = `<p>Good Luck!</p>`;
+        //Generate random degrees to stop at
+        let randomDegree = Math.floor(Math.random() * (355 - 0 + 1) + 0);
+        //Interval for rotation animation
+        let rotationInterval = window.setInterval(() => {
+          //Set rotation for piechart
+          /*
+          Initially to make the piechart rotate faster we set resultValue to 101 so it rotates 101 degrees at a time and this reduces by 1 with every count. Eventually on last rotation we rotate by 1 degree at a time.
+          */
+          myChart.options.rotation = myChart.options.rotation + resultValue;
+          //Update chart with new value;
+          myChart.update();
+          //If rotation>360 reset it back to 0
+          if (myChart.options.rotation >= 360) {
+            count += 1;
+            resultValue -= 5;
+            myChart.options.rotation = 0;
+          } else if (count > 15 && myChart.options.rotation == randomDegree) {
+            valueGenerator(randomDegree);
+            clearInterval(rotationInterval);
+            count = 0;
+            resultValue = 101;
+          }
+        }, 10);
+      });
+      document.getElementById("close-popup").addEventListener("click", () => {
+          document.getElementById("popup").style.display = "none"; // Hide popup
+      });
+
+      // Close popup when clicking outside the content box
+      window.addEventListener("click", (e) => {
+          if (e.target.id === "popup") {
+              document.getElementById("popup").style.display = "none";
+          }
+      });
+      document.getElementById("reset-btn").addEventListener("click", () => {
+          localStorage.removeItem("gamePlayed");
+          localStorage.removeItem("prize");
+          location.reload(); // Reload the page to reset everything
+      });
+    </script>
+  </body>
+</html>
