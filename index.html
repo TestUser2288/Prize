@@ -8,6 +8,119 @@
       rel="stylesheet"
     />
     <style>
+      .wrapper {
+        width: 90%;
+        max-width: 400px;
+        max-height: 90vh;
+        background-color: #ffffff;
+        position: absolute;
+        transform: translate(-50%, -50%);
+        top: 50%;
+        left: 50%;
+        padding: 2em;
+        border-radius: 1em;
+        box-shadow: 0 4em 5em rgba(27, 8, 53, 0.2);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .container {
+        position: relative;
+        width: 100%;
+        height: auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #wheel {
+        max-width: 100%;
+        height: auto;
+      }
+      #spin-btn {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        top: 50%;
+        left: 50%;
+        height: 18%;
+        width: 18%;
+        min-width: 50px;
+        min-height: 50px;
+        max-width: 70px;
+        max-height: 70px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 0;
+        background: radial-gradient(#fdcf3b 50%, #d88a40 85%);
+        color: #c66e16;
+        text-transform: uppercase;
+        font-size: 0.8em;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+        box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+      #popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        max-width: 320px;
+        background-color: white;
+        padding: 1.5em;
+        border-radius: 10px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        z-index: 1000;
+        display: none;
+      }
+
+      .popup-content {
+        font-size: 1em;
+        color: #202020;
+      }
+
+      #close-popup {
+        margin-top: 10px;
+        padding: 0.8em;
+        width: 80%;
+        font-size: 1em;
+        border: none;
+        background: #fdcf3b;
+        color: #c66e16;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      #close-popup:hover {
+        background: #d88a40;
+      }
+      @media screen and (max-width: 768px) {
+        .wrapper {
+          padding: 1.5em;
+          font-size: 14px;
+        }
+
+        #spin-btn {
+          height: 20%;
+          width: 20%;
+          min-width: 45px;
+          min-height: 45px;
+        }
+
+        #popup {
+          width: 95%;
+          max-width: 300px;
+        }
+      }
+
+    </style>
+    <style>
       * {
       padding: 0;
       margin: 0;
